@@ -1,0 +1,50 @@
+apply plugin: 'maven-publish'
+
+archivesBaseName = 'native-utils'
+
+publishing {
+    repositories {
+        mavenLocal()
+        maven {
+            name = 'GitHubPackages'
+            url = uri('https://maven.pkg.github.com/mollyim/ndkutil')
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+
+    publications {
+        ndkutil(MavenPublication) {
+            artifactId = archivesBaseName
+            version = gitVersion - ~/^v/
+
+            artifact("$buildDir/outputs/aar/${archivesBaseName}-release.aar")
+
+            pom {
+                name = archivesBaseName
+                description = 'Simple utility library for Molly Android built with the NDK'
+                url = 'https://github.com/mollyim/ndkutil'
+
+                scm {
+                    url = 'scm:git@github.com:mollyim/ndkutil.git'
+                    connection = 'scm:git@github.com:mollyim/ndkutil.git'
+                    developerConnection = 'scm:git@github.com:mollyim/ndkutil.git'
+                }
+
+                licenses {
+                    license {
+                        name = 'GPLv3'
+                        url = 'https://www.gnu.org/licenses/gpl-3.0.txt'
+                        distribution = 'repo'
+                    }
+                }
+            }
+        }
+    }
+}
+
+tasks.withType(AbstractPublishToMaven) {
+    dependsOn release:assemble
+}
